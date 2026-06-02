@@ -376,6 +376,9 @@ a{color:inherit;text-decoration:none;}
 .guest .st{font-size:.66rem;padding:3px 8px;border-radius:8px;font-weight:700;letter-spacing:.04em;}
 .st.yes{background:rgba(255,170,90,.25);color:#ffd9b3;}
 .st.no{background:rgba(150,140,170,.3);color:#d8d0e8;}
+.guest .gdel{flex:0 0 30px;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#ff9aa6;background:rgba(255,90,110,.14);transition:background .15s,transform .1s;}
+.guest .gdel:hover{background:rgba(255,90,110,.30);}
+.guest .gdel:active{transform:scale(.9);}
 .empty{text-align:center;padding:30px;color:rgba(255,255,255,.6);font-size:.9rem;}
 .demo-tag{display:inline-block;margin-top:14px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);}
 .ghostlink{display:block;width:100%;margin-bottom:14px;padding:12px;border-radius:13px;font-weight:600;font-size:.9rem;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#ffe1b0;transition:background .15s;}
@@ -640,6 +643,7 @@ const CONFIG = {
   WEBHOOK_STAFF:       "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-staff",
   WEBHOOK_LISTE:       "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-liste",
   WEBHOOK_UPDATE:      "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-update",
+  WEBHOOK_DELETE:      "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-delete",
   WHATSAPP:            "https://chat.whatsapp.com/I1T8ORZ2tHvHcxlaKGtI7T?s=cl&p=i&ilr=0",
   CODE_ENTREE: "0727"
 };
@@ -886,6 +890,7 @@ sInputs.forEach((inp,i)=>{
   inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'');if(inp.value&&i<3)sInputs[i+1].focus();if(sInputs.every(x=>x.value))submitStaff();});
   inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)sInputs[i-1].focus();});
 });
+let staffPass="";
 async function submitStaff(){
   const pass=sInputs.map(i=>i.value).join('');const msg=document.getElementById('staffMsg');
   msg.style.color='#ffd9b3';msg.textContent='Vérification…';
@@ -893,7 +898,7 @@ async function submitStaff(){
     let guests;
     if(!DEMO){const r=await fetch(CONFIG.WEBHOOK_STAFF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});if(r.status===401||r.status===403)throw{bad:true};if(!r.ok)throw new Error('http');const d_=await r.json();guests=Array.isArray(d_)?d_:(d_&&d_.data?d_.data:[]);}
     else{if(pass!=="7742")throw{bad:true};await new Promise(r=>setTimeout(r,500));guests=demoGuests();}
-    renderStaff(guests);
+    staffPass=pass;renderStaff(guests);
   }catch(err){msg.style.color='#ff9aa6';msg.textContent=err&&err.bad?'Code incorrect.':'Connexion impossible.';sInputs.forEach(i=>i.value='');sInputs[0].focus();}
 }
 function normalize(guests){const rows=[];guests.forEach(g=>{if(Array.isArray(g.personnes)){g.personnes.forEach(p=>rows.push({...p,voitures:g.voitures,submittedAt:g.submittedAt}));}else{rows.push(g);}});return rows;}
@@ -912,10 +917,11 @@ function renderStaff(guests){
   else{rows.forEach(r=>{
     const init=((r.prenom||'?')[0]||'?').toUpperCase();
     const nuits=(r.nuits&&r.nuits.length)?r.nuits.map(k=>k.slice(8)).join(', ')+' mai':'—';
-    html+=`<div class="guest ${r.presence==='non'?'no':''}"><div class="av">${init}</div><div class="meta"><div class="nm">${r.prenom||''} ${r.nom||''}</div><div class="det">${r.presence==='oui'?('Nuits : '+nuits):'Ne vient pas'}</div></div><div style="text-align:right;"><div class="ph"><a href="tel:${(r.telephone||'').replace(/[^0-9+]/g,'')}">${r.telephone||''}</a></div><span class="st ${r.presence==='oui'?'yes':'no'}">${r.presence==='oui'?'VIENT':'NON'}</span></div></div>`;
+    html+=`<div class="guest ${r.presence==='non'?'no':''}"><div class="av">${init}</div><div class="meta"><div class="nm">${r.prenom||''} ${r.nom||''}</div><div class="det">${r.presence==='oui'?('Nuits : '+nuits):'Ne vient pas'}</div></div><div style="text-align:right;"><div class="ph"><a href="tel:${(r.telephone||'').replace(/[^0-9+]/g,'')}">${r.telephone||''}</a></div><span class="st ${r.presence==='oui'?'yes':'no'}">${r.presence==='oui'?'VIENT':'NON'}</span></div><button type="button" class="gdel" data-id="${r.id}" data-nom="${escA((r.prenom||'')+' '+(r.nom||''))}" title="Supprimer" aria-label="Supprimer"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
   });}
   if(DEMO)html+=`<div style="text-align:center;"><span class="demo-tag">● Mode démo — données d'exemple</span></div>`;
   data.innerHTML=html;
+  data.querySelectorAll('.gdel').forEach(b=>b.addEventListener('click',()=>deletePerson(b.dataset.id,b.dataset.nom)));
 }
 const DEMO_DB=[
   {submittedAt:"2027-01-10T10:00:00Z",voitures:1,personnes:[{id:"d1",prenom:"Léa",nom:"Martin",telephone:"06 11 22 33 44",presence:"oui",nuits:["2027-05-07","2027-05-08"]},{id:"d2",prenom:"Hugo",nom:"Martin",telephone:"06 11 22 33 44",presence:"oui",nuits:["2027-05-07","2027-05-08"]}]},
@@ -923,6 +929,22 @@ const DEMO_DB=[
   {submittedAt:"2027-01-12T09:00:00Z",voitures:0,personnes:[{id:"d4",prenom:"Tom",nom:"Petit",telephone:"06 99 00 11 22",presence:"non",nuits:[]}]}
 ];
 function demoGuests(){return DEMO_DB;}
+function escA(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+async function fetchStaffGuests(){
+  if(DEMO)return demoGuests();
+  const r=await fetch(CONFIG.WEBHOOK_STAFF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:staffPass})});
+  if(!r.ok)throw new Error('http');
+  const d_=await r.json();return Array.isArray(d_)?d_:(d_.data||[]);
+}
+async function deletePerson(id,nom){
+  if(!id)return;
+  if(!confirm('Supprimer définitivement '+(nom&&nom.trim()?nom.trim():'cette personne')+' ? Cette action est irréversible.'))return;
+  try{
+    if(!DEMO){const r=await fetch(CONFIG.WEBHOOK_DELETE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:staffPass})});if(!r.ok)throw new Error('http');renderStaff(await fetchStaffGuests());}
+    else{demoDelete(id);renderStaff(demoGuests());}
+  }catch(err){alert('Suppression impossible pour le moment. Réessayez.');}
+}
+function demoDelete(id){DEMO_DB.forEach(s=>{if(Array.isArray(s.personnes))s.personnes=s.personnes.filter(p=>String(p.id)!==String(id));});}
 function uid(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():('id-'+Date.now()+'-'+Math.random().toString(16).slice(2));}
 /* ---------- modale : déjà inscrit (modification) ---------- */
 const editModal=document.getElementById('editModal');
