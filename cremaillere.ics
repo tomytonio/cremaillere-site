@@ -1,0 +1,30 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cremaillere Antoine & Camille//Invitation//FR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:cremaillere-antoine-camille-20270507@cremaillereantoinecami
+ lle.fr
+DTSTAMP:20260602T000000Z
+DTSTART:20270507T120000Z
+DTEND:20270508T210000Z
+SUMMARY:Crémaillère d'Antoine & Camille 🌴
+LOCATION:2B Coutretot\, 28400 Trizay-Coutretôt-Saint-Serge
+DESCRIPTION:On pend la crémaillère\, version festival ! 🌴\n\nVe
+ ndredi 7 mai 2027 à partir de 14h\, jusqu'au lendemain soir.\n
+ Dress code : Coachella × Tomorrowland (franges\, fleurs\, pail
+ lettes\, néons).\nRepas fourni par un traiteur — chacun apport
+ e sa boisson.\nCamping sur place possible (apportez votre tent
+ e).\nParking sur place ou au village.\n\nContacts : Antoine 06
+  37 85 15 87 · Camille 06 87 97 26 71\nGroupe WhatsApp : https
+ ://chat.whatsapp.com/I1T8ORZ2tHvHcxlaKGtI7T?s=cl&p=i&ilr=0\n\n
+ Infos & inscriptions : https://cremaillereantoinecamille.fr/
+URL:https://cremaillereantoinecamille.fr/
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Crémaillère d'Antoine & Camille — dans 1 semaine !
+TRIGGER:-P1W
+END:VALARM
+END:VEVENT
+END:VCALENDAR
