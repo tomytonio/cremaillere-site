@@ -604,7 +604,8 @@ a{color:inherit;text-decoration:none;}
       </div>
       <div class="field"><label>Téléphone</label><input id="e-tel" type="tel" inputmode="tel" placeholder="Laissez vide pour conserver l'actuel"></div>
       <div class="field" style="margin-bottom:0;"><label>Votre présence</label><div class="seg" id="e-seg"><button type="button" class="b-yes">✋ Je viens</button><button type="button" class="b-no">Je ne viens pas</button></div></div>
-      <div class="nights" id="e-nights"><div class="lab">Nuits de camping (5 → 10 mai)</div><div class="chips" id="e-chips"></div></div>
+      <div class="field sleepq" id="e-sleepq" style="margin-bottom:0;margin-top:14px;display:none;"><label>Dormez-vous sur place ?</label><div class="seg segsleep" id="e-segsleep"><button type="button" class="b-syes">🏕️ Oui</button><button type="button" class="b-sno">Non</button></div></div>
+      <div class="nights" id="e-nights" style="display:none;"><div class="lab">Nuits de camping (5 → 10 mai)</div><div class="chips" id="e-chips"></div></div>
       <div class="field" style="margin-top:14px;"><label>Nombre de voitures</label><div class="stepper"><button type="button" id="e-carMinus">−</button><div class="val" id="e-carVal">1</div><button type="button" id="e-carPlus">+</button></div></div>
       <button class="submit" id="saveEdit" style="margin-top:16px;"><span class="txt">Enregistrer les modifications</span><span class="spin"></span></button>
     </div>
@@ -918,11 +919,13 @@ function uid(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():('i
 /* ---------- modale : déjà inscrit (modification) ---------- */
 const editModal=document.getElementById('editModal');
 let eId=null,ePresence="",eCars=1,eList=[];
-const eYes=document.querySelector('#e-seg .b-yes'),eNo=document.querySelector('#e-seg .b-no'),eNights=document.getElementById('e-nights');
+const eYes=document.querySelector('#e-seg .b-yes'),eNo=document.querySelector('#e-seg .b-no'),eNights=document.getElementById('e-nights'),eSleepq=document.getElementById('e-sleepq'),eSyes=document.querySelector('#e-segsleep .b-syes'),eSno=document.querySelector('#e-segsleep .b-sno');let eSleep="";
 document.getElementById('e-chips').innerHTML=NIGHTS.map(n=>`<button type="button" class="chip" data-key="${n.key}"><span class="num">${n.d}</span><span class="mon">mai</span></button>`).join('');
 document.querySelectorAll('#e-chips .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('sel')));
-eYes.addEventListener('click',()=>{eYes.classList.add('on-yes');eNo.classList.remove('on-no');eNights.style.display='block';ePresence='oui';document.getElementById('e-seg').style.outline='none';});
-eNo.addEventListener('click',()=>{eNo.classList.add('on-no');eYes.classList.remove('on-yes');eNights.style.display='none';ePresence='non';document.getElementById('e-seg').style.outline='none';});
+eYes.addEventListener('click',()=>{eYes.classList.add('on-yes');eNo.classList.remove('on-no');ePresence='oui';eSleepq.style.display='block';document.getElementById('e-seg').style.outline='none';});
+eNo.addEventListener('click',()=>{eNo.classList.add('on-no');eYes.classList.remove('on-yes');ePresence='non';eSleepq.style.display='none';eNights.style.display='none';eSyes.classList.remove('on-yes');eSno.classList.remove('on-no');eSleep='';document.getElementById('e-seg').style.outline='none';});
+eSyes.addEventListener('click',()=>{eSyes.classList.add('on-yes');eSno.classList.remove('on-no');eNights.style.display='block';eSleep='oui';document.getElementById('e-segsleep').style.outline='none';});
+eSno.addEventListener('click',()=>{eSno.classList.add('on-no');eSyes.classList.remove('on-yes');eNights.style.display='none';eSleep='non';document.getElementById('e-segsleep').style.outline='none';});
 document.getElementById('e-carPlus').addEventListener('click',()=>{eCars++;document.getElementById('e-carVal').textContent=eCars;});
 document.getElementById('e-carMinus').addEventListener('click',()=>{if(eCars>0)eCars--;document.getElementById('e-carVal').textContent=eCars;});
 document.getElementById('editSearch').addEventListener('input',e=>renderEditList(e.target.value));
@@ -958,7 +961,10 @@ function selectEdit(id){
   document.getElementById('e-tel').value='';
   ePresence=it.presence||'';
   eYes.classList.toggle('on-yes',ePresence==='oui');eNo.classList.toggle('on-no',ePresence==='non');
-  eNights.style.display=ePresence==='oui'?'block':'none';
+  eSleep=(ePresence==='oui'&&it.nuits&&it.nuits.length)?'oui':(ePresence==='oui'?'non':'');
+  eSleepq.style.display=ePresence==='oui'?'block':'none';
+  eSyes.classList.toggle('on-yes',eSleep==='oui');eSno.classList.toggle('on-no',eSleep==='non');
+  eNights.style.display=eSleep==='oui'?'block':'none';
   const set=new Set(it.nuits||[]);
   document.querySelectorAll('#e-chips .chip').forEach(c=>c.classList.toggle('sel',set.has(c.dataset.key)));
   eCars=it.voitures!=null?it.voitures:1;document.getElementById('e-carVal').textContent=eCars;
@@ -974,7 +980,7 @@ saveEditBtn.addEventListener('click',async()=>{
   if(!nom.value.trim()){nom.classList.add('bad');ok=false;}
   if(!ePresence){const sg=document.getElementById('e-seg');sg.style.outline='2px solid #ff5d73';sg.style.borderRadius='13px';ok=false;}
   if(!ok)return;
-  const nuits=ePresence==='oui'?[...document.querySelectorAll('#e-chips .chip.sel')].map(c=>c.dataset.key):[];
+  const nuits=(ePresence==='oui'&&eSleep==='oui')?[...document.querySelectorAll('#e-chips .chip.sel')].map(c=>c.dataset.key):[];
   const vals={id:eId,prenom:prenom.value.trim(),nom:nom.value.trim(),presence:ePresence,nuits,voitures:eCars};
   if(tel.value.trim())vals.telephone=tel.value.trim();
   saveEditBtn.classList.add('loading');saveEditBtn.disabled=true;
