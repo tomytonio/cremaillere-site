@@ -300,6 +300,8 @@ a{color:inherit;text-decoration:none;}
   background:conic-gradient(from 0deg,var(--orange),var(--rose),var(--cyan),var(--violet),var(--orange));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 2.4s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+#e-chips .chip.sel{background:linear-gradient(155deg,#ffb14d,#ff6fa0);border-color:transparent;color:#3a1c10;box-shadow:0 6px 18px -8px rgba(255,140,70,.9),inset 0 0 0 2px rgba(255,255,255,.5);}
+#e-chips .chip.sel .num,#e-chips .chip.sel .mon{color:#3a1c10;}
 .stepper{display:flex;align-items:center;width:100%;background:rgba(255,255,255,.10);border:1.5px solid var(--line);border-radius:13px;overflow:hidden;}
 .stepper button{flex:0 0 52px;height:48px;font-size:1.5rem;font-weight:700;color:#ffe1b0;background:rgba(255,255,255,.06);}
 .stepper button:active{background:rgba(255,140,70,.3);}
