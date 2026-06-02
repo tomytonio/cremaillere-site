@@ -352,7 +352,7 @@ a{color:inherit;text-decoration:none;}
 .modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(20,10,32,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .modal.show{display:flex;animation:fade .3s ease;}
 @keyframes fade{from{opacity:0;}to{opacity:1;}}
-.sheet{width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:24px;background:linear-gradient(180deg,rgba(46,30,62,.96),rgba(30,16,46,.98));border:1px solid var(--line);box-shadow:var(--shadow);padding:24px 20px;animation:appin .4s ease;}
+.sheet{width:100%;max-width:520px;max-height:88vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:24px;background:linear-gradient(180deg,rgba(46,30,62,.96),rgba(30,16,46,.98));border:1px solid var(--line);box-shadow:var(--shadow);padding:24px 20px;animation:appin .4s ease;}
 .sheet .x{position:sticky;top:0;float:right;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid var(--line);font-size:1.1rem;}
 .sheet h2{font-family:"Anton",sans-serif;font-weight:400;text-transform:uppercase;font-size:1.5rem;margin:0 0 4px;background:var(--grad-sun);-webkit-background-clip:text;background-clip:text;color:transparent;}
 .sheet .sub{font-size:.86rem;color:rgba(255,255,255,.7);margin-bottom:18px;}
@@ -391,12 +391,14 @@ a{color:inherit;text-decoration:none;}
 .searchbox::placeholder{color:rgba(255,255,255,.45);}
 .searchbox:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,140,70,.22);}
 .editlist{max-height:46vh;overflow:auto;display:flex;flex-direction:column;gap:8px;}
+.gl{max-height:48vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:2px -2px 0;padding:0 2px;}
+body.modal-open{overflow:hidden;}
 .edit-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid var(--line);cursor:pointer;transition:background .15s;}
 .edit-row:active{background:rgba(255,140,70,.18);}
 .edit-row .av{flex:0 0 34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;background:var(--grad-fest);}
 .edit-row .nm{font-weight:600;font-size:.95rem;}
 .badge-st{margin-left:auto;font-size:.62rem;padding:3px 9px;border-radius:8px;font-weight:700;letter-spacing:.04em;}
-.wa-note{font-size:.85rem;color:rgba(255,255,255,.82);margin:16px 0 10px;line-height:1.5;}
+.wa-note{font-size:.96rem;color:#ff5d5d;margin:16px 0 10px;line-height:1.5;}
 .wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:14px;font-weight:700;font-size:1rem;color:#fff;background:#25D366;box-shadow:0 14px 30px -12px rgba(37,211,102,.75);transition:transform .15s;}
 .wa-btn:active{transform:scale(.98);}
 .wa-btn svg{width:22px;height:22px;flex:0 0 22px;}
@@ -407,7 +409,7 @@ a{color:inherit;text-decoration:none;}
 .cal-btn:active{transform:scale(.97);}
 .cal-btn svg{width:18px;height:18px;flex:0 0 18px;}
 .cal-g{background:linear-gradient(135deg,#4285F4,#3367d6);border-color:transparent;box-shadow:0 12px 26px -14px rgba(66,133,244,.9);}
-.cal-a{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);}
+.cal-a{background:linear-gradient(135deg,#ff453a,#d32f2f);border-color:transparent;box-shadow:0 12px 26px -14px rgba(255,59,48,.9);}
 </style>
 </head>
 <body>
@@ -572,6 +574,9 @@ a{color:inherit;text-decoration:none;}
         <div class="ring"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
         <h3>C'est noté !</h3>
         <p id="successText">Votre réponse a bien été enregistrée. À très vite sous les palmiers.</p>
+        <p class="wa-note">📲 <b>Important : pensez bien à rejoindre le groupe WhatsApp de la soirée !</b> C'est là que vous recevrez toutes les informations, que vous pourrez discuter, et envoyer ou recevoir les photos de l'événement.</p>
+        <a class="wa-btn" href="https://chat.whatsapp.com/I1T8ORZ2tHvHcxlaKGtI7T?s=cl&p=i&ilr=0" target="_blank" rel="noopener"><svg viewBox="0 0 32 32" fill="#fff"><path d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.5.7 4.8 1.9 6.8L3 29l6.7-2.1c1.9 1 4 1.6 6.3 1.6 7 0 12.7-5.7 12.7-12.7C28.7 8.7 23 3 16 3zm0 23.1c-2 0-3.9-.6-5.5-1.5l-.4-.2-4 1.3 1.3-3.9-.3-.4c-1-1.7-1.6-3.6-1.6-5.6 0-5.8 4.7-10.5 10.5-10.5 5.8 0 10.5 4.7 10.5 10.5 0 5.8-4.7 10.8-10.5 10.8zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.7.1-.1.3-.4.5-.6.1-.2.2-.3.3-.5.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.2.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>Rejoindre le groupe WhatsApp</a>
+        <button class="again" id="againBtn" style="margin-top:14px;">Inscrire une autre personne</button>
         <div class="cal-add">
           <p class="cal-lab">📅 Ajoute la date à ton agenda (rappel 1 semaine avant)</p>
           <div class="cal-btns">
@@ -579,9 +584,6 @@ a{color:inherit;text-decoration:none;}
             <a class="cal-btn cal-a" href="https://cremaillereantoinecamille.fr/cremaillere.ics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Apple / iCal</a>
           </div>
         </div>
-        <p class="wa-note">📲 <b>Important : pensez bien à rejoindre le groupe WhatsApp de la soirée !</b> C'est là que vous recevrez toutes les informations, que vous pourrez discuter, et envoyer ou recevoir les photos de l'événement.</p>
-        <a class="wa-btn" href="https://chat.whatsapp.com/I1T8ORZ2tHvHcxlaKGtI7T?s=cl&p=i&ilr=0" target="_blank" rel="noopener"><svg viewBox="0 0 32 32" fill="#fff"><path d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.5.7 4.8 1.9 6.8L3 29l6.7-2.1c1.9 1 4 1.6 6.3 1.6 7 0 12.7-5.7 12.7-12.7C28.7 8.7 23 3 16 3zm0 23.1c-2 0-3.9-.6-5.5-1.5l-.4-.2-4 1.3 1.3-3.9-.3-.4c-1-1.7-1.6-3.6-1.6-5.6 0-5.8 4.7-10.5 10.5-10.5 5.8 0 10.5 4.7 10.5 10.5 0 5.8-4.7 10.8-10.5 10.8zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.7.1-.1.3-.4.5-.6.1-.2.2-.3.3-.5.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.2.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>Rejoindre le groupe WhatsApp</a>
-        <button class="again" id="againBtn" style="margin-top:14px;">Inscrire une autre personne</button>
       </div>
     </section>
 
@@ -933,11 +935,11 @@ function renderStaff(guests){
   let html=`<div class="totals"><div class="tot"><div class="n">${coming.length}</div><div class="l">Présent·es</div></div><div class="tot"><div class="n">${rows.length}</div><div class="l">Réponses</div></div><div class="tot"><div class="n">${totalCars}</div><div class="l">Voitures</div></div></div>
     <div class="nights-lab">Personnes par nuit</div><div class="nights-grid">${NIGHTS.map(n=>`<div class="ncard"><div class="ncard-d">${n.d} mai</div><div class="ncard-n">${nc[n.key]}</div></div>`).join('')}</div>`;
   if(rows.length===0){html+=`<div class="empty">Aucune réponse pour le moment.</div>`;}
-  else{rows.forEach(r=>{
+  else{html+='<div class="gl">';rows.forEach(r=>{
     const init=((r.prenom||'?')[0]||'?').toUpperCase();
     const nuits=(r.nuits&&r.nuits.length)?r.nuits.map(k=>k.slice(8)).join(', ')+' mai':'—';
     html+=`<div class="guest ${r.presence==='non'?'no':''}"><div class="av">${init}</div><div class="meta"><div class="nm">${r.prenom||''} ${r.nom||''}</div><div class="det">${r.presence==='oui'?('Nuits : '+nuits):'Ne vient pas'}</div></div><div style="text-align:right;"><div class="ph"><a href="tel:${(r.telephone||'').replace(/[^0-9+]/g,'')}">${r.telephone||''}</a></div><span class="st ${r.presence==='oui'?'yes':'no'}">${r.presence==='oui'?'VIENT':'NON'}</span></div><button type="button" class="gdel" data-id="${r.id}" data-nom="${escA((r.prenom||'')+' '+(r.nom||''))}" title="Supprimer" aria-label="Supprimer"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
-  });}
+  });html+='</div>';}
   if(DEMO)html+=`<div style="text-align:center;"><span class="demo-tag">● Mode démo — données d'exemple</span></div>`;
   data.innerHTML=html;
   data.querySelectorAll('.gdel').forEach(b=>b.addEventListener('click',()=>deletePerson(b.dataset.id,b.dataset.nom)));
@@ -967,6 +969,8 @@ function demoDelete(id){DEMO_DB.forEach(s=>{if(Array.isArray(s.personnes))s.pers
 function uid(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():('id-'+Date.now()+'-'+Math.random().toString(16).slice(2));}
 /* ---------- modale : déjà inscrit (modification) ---------- */
 const editModal=document.getElementById('editModal');
+function syncBodyLock(){document.body.classList.toggle('modal-open',!!document.querySelector('.modal.show'));}
+[staffModal,editModal].forEach(m=>new MutationObserver(syncBodyLock).observe(m,{attributes:true,attributeFilter:['class']}));
 let eId=null,ePresence="",eCars=1,eList=[];
 const eYes=document.querySelector('#e-seg .b-yes'),eNo=document.querySelector('#e-seg .b-no'),eNights=document.getElementById('e-nights'),eSleepq=document.getElementById('e-sleepq'),eSyes=document.querySelector('#e-segsleep .b-syes'),eSno=document.querySelector('#e-segsleep .b-sno');let eSleep="";
 document.getElementById('e-chips').innerHTML=NIGHTS.map(n=>`<div class="chipwrap"><button type="button" class="chip" data-key="${n.key}"><span class="dow">${n.j}</span><span class="num">${n.d}</span><span class="mon">mai</span></button>${n.tag?`<span class="daytag${n.fete?' fete':''}">${n.tag}</span>`:''}</div>`).join('');
