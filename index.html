@@ -385,7 +385,15 @@ a{color:inherit;text-decoration:none;}
 .nights-tot{font-size:.78rem;color:rgba(255,255,255,.7);margin-bottom:16px;text-align:center;line-height:1.6;}
 .nights-lab{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);text-align:center;margin-bottom:8px;font-weight:600;}
 .nights-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:2px 0 18px;}
-.ncard{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:8px 3px;text-align:center;}
+.ncard{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:8px 3px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s,transform .08s;-webkit-tap-highlight-color:transparent;}
+.ncard:active{transform:scale(.94);}
+.ncard.active{border-color:rgba(255,176,90,.85);background:rgba(255,150,80,.16);}
+.night-names{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin:-8px 0 18px;animation:nnIn .18s ease;}
+@keyframes nnIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+.nn-head{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:#ffd9b3;font-weight:700;margin-bottom:9px;}
+.nn-list{display:flex;flex-wrap:wrap;gap:6px;}
+.nn-chip{font-size:.82rem;line-height:1;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:999px;padding:6px 11px;}
+.nn-empty{font-size:.82rem;color:rgba(255,255,255,.55);}
 .ncard-d{font-size:.58rem;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.6);}
 .ncard-n{font-family:"Anton",sans-serif;font-size:1.3rem;line-height:1.1;margin-top:3px;background:var(--grad-sun);-webkit-background-clip:text;background-clip:text;color:transparent;}
 .guest{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid rgba(255,255,255,.1);}
@@ -950,8 +958,9 @@ function renderStaff(guests){
   const subs={};rows.forEach(r=>{if(r.presence==='oui'&&r.submittedAt)subs[r.submittedAt]=r.voitures||0;});
   const totalCars=Object.values(subs).reduce((a,b)=>a+(+b||0),0);
   const nc={};NIGHTS.forEach(n=>nc[n.key]=0);coming.forEach(r=>(r.nuits||[]).forEach(k=>{if(nc[k]!=null)nc[k]++;}));
+  const np={};NIGHTS.forEach(n=>np[n.key]=[]);coming.forEach(r=>(r.nuits||[]).forEach(k=>{if(np[k])np[k].push(((r.prenom||'')+' '+(r.nom||'')).trim()||'Sans nom');}));Object.keys(np).forEach(k=>np[k].sort((a,b)=>a.localeCompare(b,'fr')));
   let html=`<div class="totals"><div class="tot"><div class="n">${coming.length}</div><div class="l">Présent·es</div></div><div class="tot"><div class="n">${rows.length}</div><div class="l">Réponses</div></div><div class="tot"><div class="n">${totalCars}</div><div class="l">Voitures</div></div></div>
-    <div class="nights-lab">Personnes par nuit</div><div class="nights-grid">${NIGHTS.map(n=>`<div class="ncard"><div class="ncard-d">${n.d} mai</div><div class="ncard-n">${nc[n.key]}</div></div>`).join('')}</div>`;
+    <div class="nights-lab">Personnes par nuit · touchez un jour pour voir les noms</div><div class="nights-grid">${NIGHTS.map(n=>`<div class="ncard" data-key="${n.key}" role="button" tabindex="0"><div class="ncard-d">${n.d} mai</div><div class="ncard-n">${nc[n.key]}</div></div>`).join('')}</div><div class="night-names" id="nightNames" style="display:none;"></div>`;
   if(rows.length===0){html+=`<div class="empty">Aucune réponse pour le moment.</div>`;}
   else{html+='<div class="gl">';rows.forEach(r=>{
     const init=((r.prenom||'?')[0]||'?').toUpperCase();
@@ -961,6 +970,8 @@ function renderStaff(guests){
   if(DEMO)html+=`<div style="text-align:center;"><span class="demo-tag">● Mode démo — données d'exemple</span></div>`;
   data.innerHTML=html;
   data.querySelectorAll('.gdel').forEach(b=>b.addEventListener('click',()=>deletePerson(b.dataset.id,b.dataset.nom)));
+  const nameBox=data.querySelector('#nightNames');
+  if(nameBox){const cards=[...data.querySelectorAll('.ncard')];const showNight=card=>{const k=card.dataset.key;const open=card.classList.contains('active');cards.forEach(c=>c.classList.remove('active'));if(open){nameBox.style.display='none';nameBox.innerHTML='';return;}card.classList.add('active');const nn=NIGHTS.find(n=>n.key===k);const lab=nn?(nn.j+' '+nn.d+' mai'):k;const list=np[k]||[];nameBox.innerHTML=list.length?`<div class="nn-head">${lab} · ${list.length} ${list.length>1?'personnes':'personne'}</div><div class="nn-list">${list.map(nm=>`<span class="nn-chip">${escA(nm)}</span>`).join('')}</div>`:`<div class="nn-head">${lab}</div><div class="nn-empty">Personne ne dort sur place cette nuit.</div>`;nameBox.style.display='block';};cards.forEach(card=>{card.addEventListener('click',()=>showNight(card));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showNight(card);}});});}
 }
 const DEMO_DB=[
   {submittedAt:"2027-01-10T10:00:00Z",voitures:1,personnes:[{id:"d1",prenom:"Léa",nom:"Martin",telephone:"06 11 22 33 44",presence:"oui",nuits:["2027-05-07","2027-05-08"]},{id:"d2",prenom:"Hugo",nom:"Martin",telephone:"06 11 22 33 44",presence:"oui",nuits:["2027-05-07","2027-05-08"]}]},
