@@ -25,6 +25,7 @@
 <meta name="twitter:image:alt" content="Crémaillère d'Antoine &amp; Camille — 7 mai 2027">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -378,6 +379,11 @@ a{color:inherit;text-decoration:none;}
 .code4 input{width:54px;height:62px;text-align:center;font-size:1.6rem;font-weight:700;color:#fff;border-radius:14px;background:rgba(255,255,255,.10);border:1.5px solid var(--line);}
 .code4 input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,140,70,.22);}
 .staff-msg{text-align:center;font-size:.85rem;color:#ff9aa6;min-height:18px;margin-bottom:8px;}
+.push-btn{display:block;width:100%;padding:12px 16px;border:none;border-radius:13px;background:linear-gradient(135deg,#ff7eb3,#ff5d8f);color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:0 6px 18px rgba(255,93,143,.35);}
+.push-btn:active{transform:translateY(1px);}
+.push-btn:disabled{opacity:.5;cursor:default;box-shadow:none;}
+.push-btn.on{background:linear-gradient(135deg,#5ec894,#34b06a);box-shadow:0 6px 18px rgba(47,174,99,.32);}
+.push-msg{text-align:center;font-size:.78rem;color:#ffd9b3;min-height:16px;margin-top:8px;line-height:1.35;}
 .totals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 18px;}
 .tot{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center;}
 .tot .n{font-family:"Anton",sans-serif;font-size:1.7rem;line-height:1;background:var(--grad-sun);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -641,6 +647,10 @@ body.modal-open{overflow:hidden;}
       </div>
       <div class="staff-msg" id="staffMsg"></div>
     </div>
+    <div id="pushBox" style="display:none;">
+      <button id="pushBtn" class="push-btn" type="button">🔔 Activer les notifications</button>
+      <div id="pushMsg" class="push-msg"></div>
+    </div>
     <div id="staffData" style="display:none;"></div>
   </div>
 </div>
@@ -691,6 +701,9 @@ const CONFIG = {
   WEBHOOK_LISTE:       "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-liste",
   WEBHOOK_UPDATE:      "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-update",
   WEBHOOK_DELETE:      "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-delete",
+  WEBHOOK_PUSH_SUBSCRIBE:   "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-push-subscribe",
+  WEBHOOK_PUSH_UNSUBSCRIBE: "https://n8n-1zv1.srv1641932.hstgr.cloud/webhook/cremaillere-push-unsubscribe",
+  VAPID_PUBLIC:        "BDmQZ0W69VWBUS1cyG0TMA5nCTOD21tjVvzTLszTuc0V32X3SHRboKqf8hRzMLQ5dFcOo6OWLWd0vGnR17rDhyo",
   WHATSAPP:            "https://chat.whatsapp.com/I1T8ORZ2tHvHcxlaKGtI7T?s=cl&p=i&ilr=0",
   CODE_ENTREE: "0727"
 };
@@ -931,7 +944,7 @@ const staffModal=document.getElementById('staffModal');
 document.getElementById('openStaff').addEventListener('click',()=>{staffModal.classList.add('show');resetStaff();document.querySelector('#staffCode input').focus();});
 document.getElementById('closeStaff').addEventListener('click',()=>staffModal.classList.remove('show'));
 staffModal.addEventListener('click',e=>{if(e.target===staffModal)staffModal.classList.remove('show');});
-function resetStaff(){document.getElementById('staffGate').style.display='block';document.getElementById('staffData').style.display='none';document.getElementById('staffMsg').textContent='';document.querySelectorAll('#staffCode input').forEach(i=>i.value='');}
+function resetStaff(){document.getElementById('staffGate').style.display='block';document.getElementById('staffData').style.display='none';var __pb0=document.getElementById('pushBox');if(__pb0)__pb0.style.display='none';document.getElementById('staffMsg').textContent='';document.querySelectorAll('#staffCode input').forEach(i=>i.value='');}
 const sInputs=[...document.querySelectorAll('#staffCode input')];
 sInputs.forEach((inp,i)=>{
   inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'');if(inp.value&&i<3)sInputs[i+1].focus();if(sInputs.every(x=>x.value))submitStaff();});
@@ -952,7 +965,7 @@ function normalize(guests){const rows=[];guests.forEach(g=>{if(Array.isArray(g.p
 function renderStaff(guests){
   const rows=normalize(guests||[]);
   document.getElementById('staffGate').style.display='none';
-  const data=document.getElementById('staffData');data.style.display='block';
+  const data=document.getElementById('staffData');data.style.display='block';var __pb=document.getElementById('pushBox');if(__pb)__pb.style.display='block';if(typeof refreshPushUI==='function')refreshPushUI();
   document.getElementById('staffSub').textContent='Liste des réponses reçues.';
   const coming=rows.filter(r=>r.presence==='oui');
   const subs={};rows.forEach(r=>{if(r.presence==='oui'&&r.submittedAt)subs[r.submittedAt]=r.voitures||0;});
@@ -1076,6 +1089,51 @@ saveEditBtn.addEventListener('click',async()=>{
 function demoUpdate(id,vals){
   DEMO_DB.forEach(s=>s.personnes.forEach(p=>{if(String(p.id)===String(id)){p.prenom=vals.prenom;p.nom=vals.nom;p.presence=vals.presence;p.nuits=vals.nuits;if(vals.telephone)p.telephone=vals.telephone;s.voitures=vals.voitures;}}));
 }
+
+/* ---------- notifications push (espace staff) ---------- */
+function pushSupported(){return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window);}
+function isStandalone(){return (window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);}
+function isIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent);}
+function urlB64ToUint8(str){const pad='='.repeat((4-str.length%4)%4);const b=(str+pad).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(b);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;}
+async function getReg(){try{return await navigator.serviceWorker.getRegistration();}catch(e){return null;}}
+async function currentSub(){const reg=await getReg();if(!reg)return null;try{return await reg.pushManager.getSubscription();}catch(e){return null;}}
+async function refreshPushUI(){
+  const btn=document.getElementById('pushBtn'),msg=document.getElementById('pushMsg');
+  if(!btn||!msg)return;
+  if(!pushSupported()){btn.disabled=true;btn.classList.remove('on');btn.textContent='🔔 Notifications indisponibles';msg.innerHTML=isIOS()?"Sur iPhone : ouvre le site dans Safari, bouton <b>Partager</b> &rarr; <b>Sur l'\u00e9cran d'accueil</b>, puis rouvre l'app depuis son ic\u00f4ne.":"Ce navigateur ne g\u00e8re pas les notifications.";return;}
+  if(isIOS()&&!isStandalone()){btn.disabled=true;btn.classList.remove('on');btn.textContent='🔔 Activer les notifications';msg.innerHTML="Sur iPhone, ajoute d'abord l'app \u00e0 l'\u00e9cran d'accueil : <b>Partager</b> &rarr; <b>Sur l'\u00e9cran d'accueil</b>, puis rouvre-la depuis son ic\u00f4ne.";return;}
+  btn.disabled=false;
+  if(Notification.permission==='denied'){btn.disabled=true;btn.classList.remove('on');btn.textContent='🔔 Notifications bloqu\u00e9es';msg.textContent='Autorise les notifications pour cette app dans les r\u00e9glages de ton t\u00e9l\u00e9phone.';return;}
+  const sub=await currentSub();
+  if(sub){btn.classList.add('on');btn.textContent='🔕 D\u00e9sactiver les notifications';msg.textContent='Tu re\u00e7ois les notifications sur cet appareil.';}
+  else{btn.classList.remove('on');btn.textContent='🔔 Activer les notifications';msg.textContent='Re\u00e7ois une alerte \u00e0 chaque r\u00e9ponse, m\u00eame app ferm\u00e9e.';}
+}
+async function enablePush(){
+  const msg=document.getElementById('pushMsg');
+  try{
+    msg.style.color='#ffd9b3';msg.textContent='Activation\u2026';
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){await refreshPushUI();msg.style.color='#ff9aa6';msg.textContent='Notifications refus\u00e9es.';return;}
+    const reg=await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(CONFIG.VAPID_PUBLIC)});
+    const r=await fetch(CONFIG.WEBHOOK_PUSH_SUBSCRIBE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(),ua:navigator.userAgent})});
+    if(!r.ok)throw new Error('http');
+    await refreshPushUI();
+  }catch(e){msg.style.color='#ff9aa6';msg.textContent='Activation impossible. R\u00e9essaie.';}
+}
+async function disablePush(){
+  const msg=document.getElementById('pushMsg');
+  try{
+    msg.style.color='#ffd9b3';msg.textContent='D\u00e9sactivation\u2026';
+    const sub=await currentSub();
+    if(sub){try{await fetch(CONFIG.WEBHOOK_PUSH_UNSUBSCRIBE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})});}catch(e){}try{await sub.unsubscribe();}catch(e){}}
+    await refreshPushUI();
+  }catch(e){msg.style.color='#ff9aa6';msg.textContent='Action impossible. R\u00e9essaie.';}
+}
+(function(){var b=document.getElementById('pushBtn');if(b)b.addEventListener('click',function(){if(b.classList.contains('on'))disablePush();else enablePush();});})();
+try{if(location.search.indexOf('staff=1')>=0){var os=document.getElementById('openStaff');if(os)os.click();}}catch(e){}
 </script>
 </body>
 </html>
